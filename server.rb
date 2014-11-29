@@ -17,7 +17,9 @@ get '/recipes' do
     recipes.name as recipe_name,
     recipes.id as recipe_id
   FROM
-    recipes;"
+    recipes
+  ORDER BY
+    recipe_name;"
   @recipes = db_connection{|db|
     db.exec(query)}
 
