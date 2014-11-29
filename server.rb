@@ -37,13 +37,25 @@ get '/recipes/:id' do
       recipes
     WHERE
       recipes.id = $1"
+
+  ingredient_query=
+    'SELECT
+      recipes.id as recipe_id,
+      ingredients.name as ingredient
+    FROM
+      ingredients
+    JOIN
+      recipes
+    ON
+      ingredients.recipe_id = recipes.id
+    WHERE recipes.id = $1;'
   @recipe_info = db_connection{|db| db.exec(info_query, [id])}.first
+  @ingredients = db_connection{|db| db.exec(ingredient_query, [id])}
 
   @recipe_name = @recipe_info['recipe_name']
   @recipe_desription = @recipe_info['description']
   @recipe_instructions = @recipe_info['instructions']
-  #show the details for a recipe with the given ID.
-  #includes recipe name, description, and instructions.
+
   #lists the ingredients required for the recipe.
   erb :'recipes/info'
 end
