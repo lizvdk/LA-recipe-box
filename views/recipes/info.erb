@@ -4,8 +4,8 @@
 <li><%= @recipe_desription %></li>
 
 <h3>Ingredients:</h3>
-<% @ingredients.each do |ingredient| %>
-  <li><%= ingredient['ingredient'] %></li>
+<% @recipe_info.each do |i| %>
+  <li><%= i['ingredient'] %></li>
 <% end %>
 
 <h3>Instructions</h3>

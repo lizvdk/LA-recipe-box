@@ -11,8 +11,8 @@ def db_connection
   end
 end
 
-get '/recipes' do
-  query=
+def recipe_name_id
+  query =
     "SELECT
       recipes.name as recipe_name,
       recipes.id as recipe_id
@@ -20,42 +20,43 @@ get '/recipes' do
       recipes
     ORDER BY
       recipe_name;"
-  @recipes = db_connection{|db| db.exec(query)}
+  db_connection{|db| db.exec(query)}
+end
+
+indiv_recipe_info =
+    "SELECT
+      recipes.name as recipe_name,
+      recipes.id as recipe_id,
+      recipes.description as description,
+      recipes.instructions as instructions,
+      ingredients.name as ingredient
+    FROM
+      recipes
+    JOIN
+      ingredients
+    ON
+      ingredients.recipe_id = recipes.id
+    WHERE
+      recipes.id = $1"
+
+get '/' do
+  redirect '/recipes'
+end
+
+get '/recipes' do
+
+  @recipes = recipe_name_id
 
   erb :'recipes/index'
 end
 
 get '/recipes/:id' do
   id = params['id']
-  info_query=
-    "SELECT
-      recipes.name as recipe_name,
-      recipes.id as recipe_id,
-      recipes.description as description,
-      recipes.instructions as instructions
-    FROM
-      recipes
-    WHERE
-      recipes.id = $1"
+  @recipe_info = db_connection{|db| db.exec(indiv_recipe_info, [id])}
 
-  ingredient_query=
-    'SELECT
-      recipes.id as recipe_id,
-      ingredients.name as ingredient
-    FROM
-      ingredients
-    JOIN
-      recipes
-    ON
-      ingredients.recipe_id = recipes.id
-    WHERE recipes.id = $1;'
-  @recipe_info = db_connection{|db| db.exec(info_query, [id])}.first
-  @ingredients = db_connection{|db| db.exec(ingredient_query, [id])}
+  @recipe_name = @recipe_info.first['recipe_name']
+  @recipe_desription = @recipe_info.first['description']
+  @recipe_instructions = @recipe_info.first['instructions']
 
-  @recipe_name = @recipe_info['recipe_name']
-  @recipe_desription = @recipe_info['description']
-  @recipe_instructions = @recipe_info['instructions']
-
-  #lists the ingredients required for the recipe.
   erb :'recipes/info'
 end
